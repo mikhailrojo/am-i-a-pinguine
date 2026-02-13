@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Am I The Penguin?</title>
+<meta name="description" content="One question. One truth. Are you the penguin?">
+<meta property="og:title" content="Am I The Penguin?">
+<meta property="og:description" content="One question. One truth. You already know the answer.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://amithepenguin.com">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Am I The Penguin?">
+<meta name="twitter:description" content="One question. One truth. You already know the answer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: #0a0a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .scene {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* --- STARS --- */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; }
+  }
+
+  /* --- GROUND / LANDSCAPE --- */
+  .landscape {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35vh;
+    z-index: 1;
+  }
+
+  .snow-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20vh;
+    background: linear-gradient(180deg, #1a1a3a 0%, #12122a 100%);
+  }
+
+  .mountains {
+    position: absolute;
+    bottom: 18vh;
+    left: 0;
+    right: 0;
+    height: 18vh;
+  }
+
+  .mountain {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+
+  .mountain-1 {
+    left: 5%;
+    border-width: 0 80px 14vh 100px;
+    border-color: transparent transparent #151530 transparent;
+  }
+
+  .mountain-2 {
+    left: 25%;
+    border-width: 0 120px 18vh 140px;
+    border-color: transparent transparent #111128 transparent;
+  }
+
+  .mountain-3 {
+    left: 55%;
+    border-width: 0 100px 15vh 130px;
+    border-color: transparent transparent #131330 transparent;
+  }
+
+  .mountain-4 {
+    right: 5%;
+    border-width: 0 90px 12vh 110px;
+    border-color: transparent transparent #141432 transparent;
+  }
+
+  /* --- QUESTION SCREEN --- */
+  .question-screen {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .question-screen.hidden {
+    opacity: 0;
+    transform: translateY(-30px);
+    pointer-events: none;
+  }
+
+  .question-screen h1 {
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 50px;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(100, 140, 255, 0.3);
+  }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 16px 48px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    letter-spacing: 1px;
+  }
+
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(100, 140, 255, 0.2);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  /* --- RESULT SCREEN --- */
+  .result-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.2s ease;
+    padding: 20px;
+  }
+
+  .result-screen.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .result-text {
+    font-size: clamp(1.2rem, 3.5vw, 2rem);
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(100, 140, 255, 0.3);
+    margin-bottom: 40px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+  }
+
+  .result-screen.visible .result-text {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .subtext {
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 400;
+  }
+
+  /* --- PENGUIN SVG --- */
+  .penguin-container {
+    position: fixed;
+    bottom: 18vh;
+    z-index: 5;
+    transition: none;
+  }
+
+  .penguin-container.walking {
+    animation: walkAway 6s ease-in forwards;
+  }
+
+  .penguin-container.idle {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @keyframes walkAway {
+    0% {
+      left: 50%;
+      transform: translateX(-50%) scale(1);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      left: 50%;
+      transform: translateX(-50%) scale(0.15) translateY(-120px);
+      opacity: 0.6;
+    }
+  }
+
+  .penguin-svg {
+    width: 60px;
+    height: 80px;
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+  }
+
+  .penguin-svg .body { fill: #1a1a2e; }
+  .penguin-svg .belly { fill: #d4d4d4; }
+  .penguin-svg .beak { fill: #e8943a; }
+  .penguin-svg .eye { fill: #fff; }
+  .penguin-svg .foot { fill: #e8943a; }
+
+  .waddle {
+    animation: waddle 0.4s ease-in-out infinite alternate;
+  }
+
+  @keyframes waddle {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(3deg); }
+  }
+
+  /* --- SUNSET GLOW (appears on result) --- */
+  .sunset-glow {
+    position: fixed;
+    bottom: 15vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 140, 50, 0.15) 0%, transparent 70%);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+
+  .sunset-glow.visible {
+    opacity: 1;
+  }
+
+  /* --- SHARE BUTTONS --- */
+  .share-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    opacity: 0;
+    transition: opacity 1s ease 2.5s;
+  }
+
+  .result-screen.visible .share-row {
+    opacity: 1;
+  }
+
+  .share-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .share-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .try-again {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.25);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 30px;
+    padding: 8px;
+    opacity: 0;
+    transition: opacity 1s ease 3.5s, color 0.3s ease;
+  }
+
+  .result-screen.visible .try-again {
+    opacity: 1;
+  }
+
+  .try-again:hover {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* --- COUNTER --- */
+  .counter {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.15);
+    z-index: 20;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="landscape">
+  <div class="mountains">
+    <div class="mountain mountain-1"></div>
+    <div class="mountain mountain-2"></div>
+    <div class="mountain mountain-3"></div>
+    <div class="mountain mountain-4"></div>
+  </div>
+  <div class="snow-ground"></div>
+</div>
+
+<div class="sunset-glow" id="sunsetGlow"></div>
+
+<div class="penguin-container idle" id="penguin">
+  <svg class="penguin-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+    <g class="waddle">
+      <ellipse class="body" cx="30" cy="42" rx="18" ry="28"/>
+      <ellipse class="belly" cx="30" cy="46" rx="11" ry="20"/>
+      <circle class="body" cx="30" cy="18" r="13"/>
+      <circle class="eye" cx="25" cy="16" r="2.5"/>
+      <circle class="eye" cx="35" cy="16" r="2.5"/>
+      <circle cx="25" cy="16" r="1.2" fill="#111"/>
+      <circle cx="35" cy="16" r="1.2" fill="#111"/>
+      <polygon class="beak" points="30,19 26,24 34,24"/>
+      <ellipse class="body" cx="14" cy="45" rx="6" ry="3" transform="rotate(-20 14 45)"/>
+      <ellipse class="body" cx="46" cy="45" rx="6" ry="3" transform="rotate(20 46 45)"/>
+      <ellipse class="foot" cx="23" cy="70" rx="7" ry="3"/>
+      <ellipse class="foot" cx="37" cy="70" rx="7" ry="3"/>
+    </g>
+  </svg>
+</div>
+
+<div class="scene">
+  <div class="question-screen" id="questionScreen">
+    <h1>Do you want to walk away<br>from everything right now?</h1>
+    <div class="buttons">
+      <button class="btn" onclick="answer('yes')">Yes</button>
+      <button class="btn" onclick="answer('no')">No</button>
+    </div>
+  </div>
+</div>
+
+<div class="result-screen" id="resultScreen">
+  <div class="result-text" id="resultText"></div>
+  <div class="share-row">
+    <a class="share-btn" id="shareTwitter" href="#" target="_blank" rel="noopener">Share on X</a>
+    <button class="share-btn" id="shareCopy" onclick="copyLink()">Copy link</button>
+  </div>
+  <button class="try-again" onclick="reset()">(take the test again. it won't help.)</button>
+</div>
+
+<div class="counter" id="counter"></div>
+
+<script>
+  const PENGUIN_COUNT_KEY = 'penguin_count';
+  const SHARE_URL = 'https://amithepenguin.com';
+  const SHARE_TEXT_YES = "I am the penguin. 🐧";
+  const SHARE_TEXT_NO = "I tried to deny it. I am still the penguin. 🐧";
+
+  function createStars() {
+    const container = document.getElementById('stars');
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 65 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (2 + Math.random() * 3) + 's';
+      const size = Math.random() > 0.8 ? 3 : Math.random() > 0.5 ? 2 : 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      container.appendChild(star);
+    }
+  }
+
+  function getCount() {
+    const stored = localStorage.getItem(PENGUIN_COUNT_KEY);
+    const base = 2847193;
+    return stored ? parseInt(stored) : base;
+  }
+
+  function incrementCount() {
+    const count = getCount() + 1;
+    localStorage.setItem(PENGUIN_COUNT_KEY, count);
+    return count;
+  }
+
+  function updateCounter() {
+    const count = getCount();
+    document.getElementById('counter').textContent =
+      count.toLocaleString() + ' penguins have walked away';
+  }
+
+  let currentChoice = null;
+
+  function answer(choice) {
+    currentChoice = choice;
+    const questionScreen = document.getElementById('questionScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const penguin = document.getElementById('penguin');
+    const sunsetGlow = document.getElementById('sunsetGlow');
+    const resultText = document.getElementById('resultText');
+
+    const yesText = "You are the penguin.<br>Walk free.";
+    const noText = "You're lying.<br>You are still the penguin.";
+
+    resultText.innerHTML = choice === 'yes' ? yesText : noText;
+
+    const shareText = choice === 'yes' ? SHARE_TEXT_YES : SHARE_TEXT_NO;
+    document.getElementById('shareTwitter').href =
+      'https://x.com/intent/tweet?text=' + encodeURIComponent(shareText + '\n' + SHARE_URL);
+
+    questionScreen.classList.add('hidden');
+    penguin.classList.remove('idle');
+    penguin.classList.add('walking');
+    penguin.querySelector('.waddle').style.animationDuration = '0.25s';
+
+    setTimeout(() => sunsetGlow.classList.add('visible'), 500);
+    setTimeout(() => resultScreen.classList.add('visible'), 1500);
+
+    incrementCount();
+    updateCounter();
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(SHARE_URL).then(() => {
+      const btn = document.getElementById('shareCopy');
+      btn.textContent = 'Copied';
+      setTimeout(() => btn.textContent = 'Copy link', 2000);
+    });
+  }
+
+  function reset() {
+    const questionScreen = document.getElementById('questionScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const penguin = document.getElementById('penguin');
+    const sunsetGlow = document.getElementById('sunsetGlow');
+
+    resultScreen.classList.remove('visible');
+    sunsetGlow.classList.remove('visible');
+
+    setTimeout(() => {
+      penguin.classList.remove('walking');
+      penguin.classList.add('idle');
+      penguin.querySelector('.waddle').style.animationDuration = '0.4s';
+      questionScreen.classList.remove('hidden');
+    }, 800);
+  }
+
+  createStars();
+  updateCounter();
+</script>
+
+</body>
+</html>
