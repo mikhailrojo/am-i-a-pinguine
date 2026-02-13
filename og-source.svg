@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="75%" r="40%">
+      <stop offset="0%" stop-color="#ff9632" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#ff5020" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0a0a1a"/>
+
+  <circle cx="180" cy="120" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="350" cy="80" r="1" fill="white" opacity="0.4"/>
+  <circle cx="520" cy="150" r="2" fill="white" opacity="0.8"/>
+  <circle cx="700" cy="60" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="850" cy="130" r="1" fill="white" opacity="0.7"/>
+  <circle cx="1000" cy="90" r="2" fill="white" opacity="0.4"/>
+  <circle cx="1100" cy="170" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="100" cy="200" r="1" fill="white" opacity="0.3"/>
+  <circle cx="450" cy="50" r="1" fill="white" opacity="0.5"/>
+  <circle cx="950" cy="40" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="600" cy="100" r="1" fill="white" opacity="0.4"/>
+  <circle cx="270" cy="170" r="1.5" fill="white" opacity="0.5"/>
+
+  <polygon points="150,430 350,330 550,430" fill="#151530"/>
+  <polygon points="350,430 620,280 890,430" fill="#111128"/>
+  <polygon points="700,430 920,340 1140,430" fill="#131330"/>
+
+  <rect x="0" y="430" width="1200" height="200" fill="#1a1a3a"/>
+  <rect x="0" y="500" width="1200" height="130" fill="#12122a"/>
+
+  <ellipse cx="600" cy="430" rx="300" ry="200" fill="url(#glow)"/>
+
+  <g transform="translate(565, 370) scale(0.9)">
+    <ellipse cx="30" cy="42" rx="18" ry="28" fill="#252540"/>
+    <circle cx="30" cy="18" r="13" fill="#252540"/>
+    <ellipse cx="14" cy="45" rx="6" ry="3" fill="#252540" transform="rotate(-20 14 45)"/>
+    <ellipse cx="46" cy="45" rx="6" ry="3" fill="#252540" transform="rotate(20 46 45)"/>
+    <ellipse cx="23" cy="70" rx="7" ry="3" fill="#252540"/>
+    <ellipse cx="37" cy="70" rx="7" ry="3" fill="#252540"/>
+  </g>
+
+  <text x="600" y="220" font-family="monospace" font-size="56" font-weight="bold" fill="white" text-anchor="middle" opacity="0.95">Am I The Penguin?</text>
+
+  <text x="600" y="560" font-family="monospace" font-size="22" fill="white" text-anchor="middle" opacity="0.3">one question. one truth.</text>
+</svg>
