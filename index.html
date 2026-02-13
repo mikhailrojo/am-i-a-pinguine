@@ -8,10 +8,11 @@
 <meta property="og:title" content="Am I The Penguin?">
 <meta property="og:description" content="One question. One truth. You already know the answer.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://amithepenguin.com">
+<meta property="og:url" content="https://am-i-a-penguin.netlify.app">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Am I The Penguin?">
 <meta name="twitter:description" content="One question. One truth. You already know the answer.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='38' rx='16' ry='22' fill='%231a1a2e'/%3E%3Cellipse cx='32' cy='42' rx='10' ry='16' fill='%23e0e0e0'/%3E%3Ccircle cx='32' cy='18' r='12' fill='%231a1a2e'/%3E%3Ccircle cx='27' cy='16' r='2.5' fill='white'/%3E%3Ccircle cx='37' cy='16' r='2.5' fill='white'/%3E%3Ccircle cx='27' cy='16' r='1' fill='%23111'/%3E%3Ccircle cx='37' cy='16' r='1' fill='%23111'/%3E%3Cpolygon points='32,19 28,24 36,24' fill='%23e8943a'/%3E%3Cellipse cx='22' cy='58' rx='6' ry='2.5' fill='%23e8943a'/%3E%3Cellipse cx='42' cy='58' rx='6' ry='2.5' fill='%23e8943a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -27,16 +28,6 @@
     -webkit-user-select: none;
   }
 
-  .scene {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* --- STARS --- */
   .stars {
     position: fixed;
     inset: 0;
@@ -57,13 +48,12 @@
     100% { opacity: 1; }
   }
 
-  /* --- GROUND / LANDSCAPE --- */
   .landscape {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 35vh;
+    height: 40vh;
     z-index: 1;
   }
 
@@ -72,16 +62,25 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 20vh;
+    height: 22vh;
     background: linear-gradient(180deg, #1a1a3a 0%, #12122a 100%);
+  }
+
+  .horizon-line {
+    position: absolute;
+    bottom: 20vh;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .mountains {
     position: absolute;
-    bottom: 18vh;
+    bottom: 20vh;
     left: 0;
     right: 0;
-    height: 18vh;
+    height: 20vh;
   }
 
   .mountain {
@@ -116,18 +115,111 @@
     border-color: transparent transparent #141432 transparent;
   }
 
-  /* --- QUESTION SCREEN --- */
-  .question-screen {
-    position: relative;
+  .sunset-glow {
+    position: fixed;
+    left: 50%;
+    bottom: 25vh;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(255, 150, 50, 0.2) 0%, rgba(255, 80, 30, 0.06) 50%, transparent 70%);
+    z-index: 2;
+    opacity: 0;
+    transition: width 6s ease, height 6s ease, opacity 4s ease;
+    pointer-events: none;
+  }
+
+  .sunset-glow.visible {
+    width: 700px;
+    height: 500px;
+    opacity: 1;
+  }
+
+  /* --- SNOW PARTICLES --- */
+  .snow-particle {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* --- PENGUIN --- */
+  .penguin-wrap {
+    position: fixed;
+    left: 50%;
+    bottom: 14vh;
+    z-index: 5;
+    transform: translateX(-50%);
+    will-change: transform, opacity;
+  }
+
+  .penguin-svg {
+    width: 60px;
+    height: 80px;
+    display: block;
+  }
+
+  .penguin-svg .p-body { fill: #1a1a2e; }
+  .penguin-svg .p-belly { fill: #d4d4d4; }
+  .penguin-svg .p-beak { fill: #e8943a; }
+  .penguin-svg .p-eye-w { fill: #fff; }
+  .penguin-svg .p-eye-b { fill: #111; }
+  .penguin-svg .p-foot { fill: #e8943a; }
+
+  .penguin-svg.silhouette {
+    filter: drop-shadow(0 0 6px rgba(180, 160, 220, 0.4))
+            drop-shadow(0 0 20px rgba(140, 120, 200, 0.15));
+  }
+  .penguin-svg.silhouette .p-body { fill: #22223a; }
+  .penguin-svg.silhouette .p-belly,
+  .penguin-svg.silhouette .p-beak,
+  .penguin-svg.silhouette .p-eye-w,
+  .penguin-svg.silhouette .p-eye-b,
+  .penguin-svg.silhouette .p-foot {
+    fill: #22223a;
+  }
+
+  .penguin-svg .p-belly,
+  .penguin-svg .p-beak,
+  .penguin-svg .p-eye-w,
+  .penguin-svg .p-eye-b,
+  .penguin-svg .p-foot {
+    transition: fill 0.6s ease;
+  }
+
+  /* --- FOOTPRINTS --- */
+  .footprint {
+    position: fixed;
+    background: rgba(200, 210, 230, 0.08);
+    border-radius: 50%;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  /* --- QUESTION --- */
+  .scene {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     z-index: 10;
+  }
+
+  .question-screen {
     text-align: center;
     padding: 20px;
-    transition: opacity 0.8s ease, transform 0.8s ease;
+    transition: opacity 0.6s ease, transform 0.6s ease;
   }
 
   .question-screen.hidden {
     opacity: 0;
-    transform: translateY(-30px);
+    transform: translateY(-20px);
     pointer-events: none;
   }
 
@@ -168,11 +260,9 @@
     box-shadow: 0 8px 30px rgba(100, 140, 255, 0.2);
   }
 
-  .btn:active {
-    transform: translateY(0);
-  }
+  .btn:active { transform: translateY(0); }
 
-  /* --- RESULT SCREEN --- */
+  /* --- RESULT --- */
   .result-screen {
     position: fixed;
     inset: 0;
@@ -183,7 +273,7 @@
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 1.2s ease;
+    transition: opacity 1s ease;
     padding: 20px;
   }
 
@@ -201,7 +291,7 @@
     margin-bottom: 40px;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+    transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
   }
 
   .result-screen.visible .result-text {
@@ -209,99 +299,15 @@
     transform: translateY(0);
   }
 
-  .subtext {
-    font-size: clamp(0.75rem, 2vw, 0.9rem);
-    color: rgba(255, 255, 255, 0.4);
-    text-align: center;
-    margin-top: 10px;
-    font-weight: 400;
-  }
-
-  /* --- PENGUIN SVG --- */
-  .penguin-container {
-    position: fixed;
-    bottom: 18vh;
-    z-index: 5;
-    transition: none;
-  }
-
-  .penguin-container.walking {
-    animation: walkAway 6s ease-in forwards;
-  }
-
-  .penguin-container.idle {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  @keyframes walkAway {
-    0% {
-      left: 50%;
-      transform: translateX(-50%) scale(1);
-      opacity: 1;
-    }
-    70% {
-      opacity: 1;
-    }
-    100% {
-      left: 50%;
-      transform: translateX(-50%) scale(0.15) translateY(-120px);
-      opacity: 0.6;
-    }
-  }
-
-  .penguin-svg {
-    width: 60px;
-    height: 80px;
-    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
-  }
-
-  .penguin-svg .body { fill: #1a1a2e; }
-  .penguin-svg .belly { fill: #d4d4d4; }
-  .penguin-svg .beak { fill: #e8943a; }
-  .penguin-svg .eye { fill: #fff; }
-  .penguin-svg .foot { fill: #e8943a; }
-
-  .waddle {
-    animation: waddle 0.4s ease-in-out infinite alternate;
-  }
-
-  @keyframes waddle {
-    0% { transform: rotate(-3deg); }
-    100% { transform: rotate(3deg); }
-  }
-
-  /* --- SUNSET GLOW (appears on result) --- */
-  .sunset-glow {
-    position: fixed;
-    bottom: 15vh;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 140, 50, 0.15) 0%, transparent 70%);
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 2s ease;
-  }
-
-  .sunset-glow.visible {
-    opacity: 1;
-  }
-
-  /* --- SHARE BUTTONS --- */
   .share-row {
     display: flex;
     gap: 12px;
     margin-top: 30px;
     opacity: 0;
-    transition: opacity 1s ease 2.5s;
+    transition: opacity 1s ease 1.5s;
   }
 
-  .result-screen.visible .share-row {
-    opacity: 1;
-  }
+  .result-screen.visible .share-row { opacity: 1; }
 
   .share-btn {
     font-family: 'Space Mono', monospace;
@@ -332,18 +338,12 @@
     margin-top: 30px;
     padding: 8px;
     opacity: 0;
-    transition: opacity 1s ease 3.5s, color 0.3s ease;
+    transition: opacity 1s ease 2.5s, color 0.3s ease;
   }
 
-  .result-screen.visible .try-again {
-    opacity: 1;
-  }
+  .result-screen.visible .try-again { opacity: 1; }
+  .try-again:hover { color: rgba(255, 255, 255, 0.5); }
 
-  .try-again:hover {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  /* --- COUNTER --- */
   .counter {
     position: fixed;
     bottom: 16px;
@@ -367,26 +367,27 @@
     <div class="mountain mountain-3"></div>
     <div class="mountain mountain-4"></div>
   </div>
+  <div class="horizon-line"></div>
   <div class="snow-ground"></div>
 </div>
 
 <div class="sunset-glow" id="sunsetGlow"></div>
 
-<div class="penguin-container idle" id="penguin">
-  <svg class="penguin-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
-    <g class="waddle">
-      <ellipse class="body" cx="30" cy="42" rx="18" ry="28"/>
-      <ellipse class="belly" cx="30" cy="46" rx="11" ry="20"/>
-      <circle class="body" cx="30" cy="18" r="13"/>
-      <circle class="eye" cx="25" cy="16" r="2.5"/>
-      <circle class="eye" cx="35" cy="16" r="2.5"/>
-      <circle cx="25" cy="16" r="1.2" fill="#111"/>
-      <circle cx="35" cy="16" r="1.2" fill="#111"/>
-      <polygon class="beak" points="30,19 26,24 34,24"/>
-      <ellipse class="body" cx="14" cy="45" rx="6" ry="3" transform="rotate(-20 14 45)"/>
-      <ellipse class="body" cx="46" cy="45" rx="6" ry="3" transform="rotate(20 46 45)"/>
-      <ellipse class="foot" cx="23" cy="70" rx="7" ry="3"/>
-      <ellipse class="foot" cx="37" cy="70" rx="7" ry="3"/>
+<div class="penguin-wrap" id="penguin">
+  <svg class="penguin-svg" id="penguinSvg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+    <g id="waddleGroup" transform-origin="30 70">
+      <ellipse class="p-body" cx="30" cy="42" rx="18" ry="28"/>
+      <ellipse class="p-belly" cx="30" cy="46" rx="11" ry="20"/>
+      <circle class="p-body" cx="30" cy="18" r="13"/>
+      <circle class="p-eye-w" cx="25" cy="16" r="2.5"/>
+      <circle class="p-eye-w" cx="35" cy="16" r="2.5"/>
+      <circle class="p-eye-b" cx="25" cy="16" r="1.2"/>
+      <circle class="p-eye-b" cx="35" cy="16" r="1.2"/>
+      <polygon class="p-beak" points="30,19 26,24 34,24"/>
+      <ellipse class="p-body" cx="14" cy="45" rx="6" ry="3" transform="rotate(-20 14 45)"/>
+      <ellipse class="p-body" cx="46" cy="45" rx="6" ry="3" transform="rotate(20 46 45)"/>
+      <ellipse class="p-foot" cx="23" cy="70" rx="7" ry="3"/>
+      <ellipse class="p-foot" cx="37" cy="70" rx="7" ry="3"/>
     </g>
   </svg>
 </div>
@@ -413,72 +414,228 @@
 <div class="counter" id="counter"></div>
 
 <script>
-  const PENGUIN_COUNT_KEY = 'penguin_count';
-  const SHARE_URL = 'https://amithepenguin.com';
-  const SHARE_TEXT_YES = "I am the penguin. 🐧";
-  const SHARE_TEXT_NO = "I tried to deny it. I am still the penguin. 🐧";
+  const SHARE_URL = 'https://am-i-a-penguin.netlify.app';
+  const COUNT_KEY = 'penguin_count';
+
+  const WALK_STYLES = [
+    { duration: 7000, drift: 0,    pauseAt: -1,  label: 'resolute' },
+    { duration: 8000, drift: -80,  pauseAt: -1,  label: 'drifts-left' },
+    { duration: 8000, drift: 70,   pauseAt: -1,  label: 'drifts-right' },
+    { duration: 9000, drift: 0,    pauseAt: 0.4, label: 'hesitant' },
+    { duration: 10000, drift: -40, pauseAt: 0.3, label: 'slow-wander' },
+  ];
+
+  let walkFrame = null;
+  let snowFrames = [];
+  const footprintEls = [];
+  const snowEls = [];
 
   function createStars() {
-    const container = document.getElementById('stars');
-    const count = 80;
-    for (let i = 0; i < count; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.top = Math.random() * 65 + '%';
-      star.style.animationDelay = Math.random() * 3 + 's';
-      star.style.animationDuration = (2 + Math.random() * 3) + 's';
-      const size = Math.random() > 0.8 ? 3 : Math.random() > 0.5 ? 2 : 1;
-      star.style.width = size + 'px';
-      star.style.height = size + 'px';
-      container.appendChild(star);
+    const c = document.getElementById('stars');
+    for (let i = 0; i < 90; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 60 + '%';
+      s.style.animationDelay = Math.random() * 3 + 's';
+      s.style.animationDuration = (2 + Math.random() * 3) + 's';
+      const sz = Math.random() > 0.85 ? 3 : Math.random() > 0.5 ? 2 : 1;
+      s.style.width = sz + 'px';
+      s.style.height = sz + 'px';
+      c.appendChild(s);
     }
   }
 
   function getCount() {
-    const stored = localStorage.getItem(PENGUIN_COUNT_KEY);
-    const base = 2847193;
-    return stored ? parseInt(stored) : base;
+    const v = localStorage.getItem(COUNT_KEY);
+    return v ? parseInt(v) : 2847193;
   }
 
   function incrementCount() {
-    const count = getCount() + 1;
-    localStorage.setItem(PENGUIN_COUNT_KEY, count);
-    return count;
+    const c = getCount() + 1;
+    localStorage.setItem(COUNT_KEY, c);
+    return c;
   }
 
   function updateCounter() {
-    const count = getCount();
     document.getElementById('counter').textContent =
-      count.toLocaleString() + ' penguins have walked away';
+      getCount().toLocaleString() + ' penguins have walked away';
   }
 
-  let currentChoice = null;
+  function ease(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function dropFootprint(screenX, screenY, scale) {
+    const sz = Math.max(2, 6 * scale);
+    const fp = document.createElement('div');
+    fp.className = 'footprint';
+    fp.style.left = (screenX - sz / 2) + 'px';
+    fp.style.top = (screenY) + 'px';
+    fp.style.width = sz + 'px';
+    fp.style.height = (sz * 0.5) + 'px';
+    fp.style.opacity = Math.min(0.12, 0.12 * scale);
+    document.body.appendChild(fp);
+    footprintEls.push(fp);
+  }
+
+  function startSnow() {
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'snow-particle';
+      const sz = 1 + Math.random() * 3;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      document.body.appendChild(p);
+
+      const state = {
+        el: p,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        speedY: 0.2 + Math.random() * 0.5,
+        speedX: -0.3 - Math.random() * 0.5,
+        drift: Math.random() * Math.PI * 2,
+      };
+      snowEls.push(state);
+    }
+
+    function animSnow() {
+      for (const s of snowEls) {
+        s.y += s.speedY;
+        s.x += s.speedX + Math.sin(s.drift) * 0.3;
+        s.drift += 0.01;
+        if (s.y > window.innerHeight) { s.y = -5; s.x = Math.random() * window.innerWidth; }
+        if (s.x < -10) s.x = window.innerWidth + 5;
+        s.el.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px)';
+      }
+      snowFrames.push(requestAnimationFrame(animSnow));
+    }
+    snowFrames.push(requestAnimationFrame(animSnow));
+  }
+
+  function stopSnow() {
+    snowFrames.forEach(id => cancelAnimationFrame(id));
+    snowFrames = [];
+    snowEls.forEach(s => s.el.remove());
+    snowEls.length = 0;
+  }
+
+  function clearFootprints() {
+    footprintEls.forEach(f => f.remove());
+    footprintEls.length = 0;
+  }
+
+  function animateWalk(onDone) {
+    const style = WALK_STYLES[Math.floor(Math.random() * WALK_STYLES.length)];
+    const penguin = document.getElementById('penguin');
+    const svg = document.getElementById('penguinSvg');
+    const wg = document.getElementById('waddleGroup');
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    const startX = 0;
+    const startY = 0;
+    const endY = -(H * 0.06);
+    const endX = style.drift;
+    const endScale = 0.12;
+
+    const PAUSE_DUR = 800;
+    const startTime = performance.now();
+    let pauseOffset = 0;
+    let isPaused = false;
+    let pauseStart = 0;
+    let lastFpT = 0;
+    let stepSide = 1;
+
+    svg.classList.add('silhouette');
+    startSnow();
+
+    function tick(now) {
+      const wallElapsed = now - startTime - pauseOffset;
+      const rawT = Math.min(wallElapsed / style.duration, 1);
+
+      if (!isPaused && style.pauseAt > 0 && rawT >= style.pauseAt && pauseOffset === 0) {
+        isPaused = true;
+        pauseStart = now;
+      }
+
+      if (isPaused) {
+        if (now - pauseStart >= PAUSE_DUR) {
+          pauseOffset = PAUSE_DUR;
+          isPaused = false;
+        } else {
+          wg.setAttribute('transform', 'rotate(0 30 70)');
+          walkFrame = requestAnimationFrame(tick);
+          return;
+        }
+      }
+
+      const t = ease(rawT);
+      const x = lerp(startX, endX, t);
+      const y = lerp(startY, endY, t);
+      const scale = lerp(1, endScale, t);
+
+      const waddleSpeed = lerp(0.014, 0.018, rawT);
+      const waddleAmp = lerp(6, 2, rawT);
+      const waddle = Math.sin(wallElapsed * waddleSpeed) * waddleAmp;
+
+      penguin.style.transform =
+        'translateX(calc(-50% + ' + x + 'px)) translateY(' + y + 'px) scale(' + scale + ')';
+
+      const fadeT = rawT > 0.8 ? (rawT - 0.8) / 0.2 : 0;
+      penguin.style.opacity = lerp(1, 0.3, fadeT);
+
+      wg.setAttribute('transform', 'rotate(' + waddle + ' 30 70)');
+
+      if (rawT - lastFpT > 0.03 && rawT < 0.9) {
+        stepSide *= -1;
+        const rect = penguin.getBoundingClientRect();
+        const fpX = rect.left + rect.width / 2 + stepSide * 3 * scale;
+        const fpY = rect.bottom - 2 * scale;
+        dropFootprint(fpX, fpY, scale);
+        lastFpT = rawT;
+      }
+
+      if (rawT < 1) {
+        walkFrame = requestAnimationFrame(tick);
+      } else {
+        onDone();
+      }
+    }
+
+    walkFrame = requestAnimationFrame(tick);
+  }
 
   function answer(choice) {
-    currentChoice = choice;
     const questionScreen = document.getElementById('questionScreen');
     const resultScreen = document.getElementById('resultScreen');
-    const penguin = document.getElementById('penguin');
-    const sunsetGlow = document.getElementById('sunsetGlow');
     const resultText = document.getElementById('resultText');
+    const sunsetGlow = document.getElementById('sunsetGlow');
 
-    const yesText = "You are the penguin.<br>Walk free.";
-    const noText = "You're lying.<br>You are still the penguin.";
+    resultText.innerHTML = choice === 'yes'
+      ? 'You are the penguin.<br>Walk free.'
+      : "You're lying.<br>You are still the penguin.";
 
-    resultText.innerHTML = choice === 'yes' ? yesText : noText;
+    const shareText = choice === 'yes'
+      ? 'I am the penguin.\n' + SHARE_URL
+      : 'I tried to deny it. I am still the penguin.\n' + SHARE_URL;
 
-    const shareText = choice === 'yes' ? SHARE_TEXT_YES : SHARE_TEXT_NO;
     document.getElementById('shareTwitter').href =
-      'https://x.com/intent/tweet?text=' + encodeURIComponent(shareText + '\n' + SHARE_URL);
+      'https://x.com/intent/tweet?text=' + encodeURIComponent(shareText);
 
     questionScreen.classList.add('hidden');
-    penguin.classList.remove('idle');
-    penguin.classList.add('walking');
-    penguin.querySelector('.waddle').style.animationDuration = '0.25s';
 
-    setTimeout(() => sunsetGlow.classList.add('visible'), 500);
-    setTimeout(() => resultScreen.classList.add('visible'), 1500);
+    setTimeout(() => {
+      sunsetGlow.classList.add('visible');
+      animateWalk(() => {
+        resultScreen.classList.add('visible');
+      });
+    }, 600);
 
     incrementCount();
     updateCounter();
@@ -493,20 +650,27 @@
   }
 
   function reset() {
+    if (walkFrame) { cancelAnimationFrame(walkFrame); walkFrame = null; }
+    stopSnow();
+
     const questionScreen = document.getElementById('questionScreen');
     const resultScreen = document.getElementById('resultScreen');
     const penguin = document.getElementById('penguin');
+    const svg = document.getElementById('penguinSvg');
     const sunsetGlow = document.getElementById('sunsetGlow');
+    const wg = document.getElementById('waddleGroup');
 
     resultScreen.classList.remove('visible');
     sunsetGlow.classList.remove('visible');
 
     setTimeout(() => {
-      penguin.classList.remove('walking');
-      penguin.classList.add('idle');
-      penguin.querySelector('.waddle').style.animationDuration = '0.4s';
+      clearFootprints();
+      penguin.style.transform = 'translateX(-50%)';
+      penguin.style.opacity = '1';
+      svg.classList.remove('silhouette');
+      wg.setAttribute('transform', '');
       questionScreen.classList.remove('hidden');
-    }, 800);
+    }, 600);
   }
 
   createStars();
