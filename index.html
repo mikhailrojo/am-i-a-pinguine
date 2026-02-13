@@ -118,21 +118,21 @@
   .sunset-glow {
     position: fixed;
     left: 50%;
-    bottom: 25vh;
+    bottom: 18vh;
     width: 0;
     height: 0;
     border-radius: 50%;
     transform: translateX(-50%);
-    background: radial-gradient(circle, rgba(255, 150, 50, 0.2) 0%, rgba(255, 80, 30, 0.06) 50%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 150, 50, 0.25) 0%, rgba(255, 80, 30, 0.08) 50%, transparent 70%);
     z-index: 2;
     opacity: 0;
-    transition: width 6s ease, height 6s ease, opacity 4s ease;
+    transition: width 3s ease, height 3s ease, opacity 2s ease;
     pointer-events: none;
   }
 
   .sunset-glow.visible {
-    width: 700px;
-    height: 500px;
+    width: 600px;
+    height: 400px;
     opacity: 1;
   }
 
@@ -171,24 +171,25 @@
   .penguin-svg .p-foot { fill: #e8943a; }
 
   .penguin-svg.silhouette {
-    filter: drop-shadow(0 0 6px rgba(180, 160, 220, 0.4))
-            drop-shadow(0 0 20px rgba(140, 120, 200, 0.15));
+    filter: drop-shadow(0 0 8px rgba(200, 180, 255, 0.5))
+            drop-shadow(0 0 25px rgba(160, 130, 220, 0.2));
   }
-  .penguin-svg.silhouette .p-body { fill: #22223a; }
+  .penguin-svg.silhouette .p-body { fill: #252540; }
   .penguin-svg.silhouette .p-belly,
   .penguin-svg.silhouette .p-beak,
   .penguin-svg.silhouette .p-eye-w,
   .penguin-svg.silhouette .p-eye-b,
   .penguin-svg.silhouette .p-foot {
-    fill: #22223a;
+    fill: #252540;
   }
 
+  .penguin-svg .p-body,
   .penguin-svg .p-belly,
   .penguin-svg .p-beak,
   .penguin-svg .p-eye-w,
   .penguin-svg .p-eye-b,
   .penguin-svg .p-foot {
-    transition: fill 0.6s ease;
+    transition: fill 0.5s ease;
   }
 
   /* --- FOOTPRINTS --- */
@@ -417,225 +418,273 @@
   const SHARE_URL = 'https://am-i-a-penguin.netlify.app';
   const COUNT_KEY = 'penguin_count';
 
-  const WALK_STYLES = [
-    { duration: 7000, drift: 0,    pauseAt: -1,  label: 'resolute' },
-    { duration: 8000, drift: -80,  pauseAt: -1,  label: 'drifts-left' },
-    { duration: 8000, drift: 70,   pauseAt: -1,  label: 'drifts-right' },
-    { duration: 9000, drift: 0,    pauseAt: 0.4, label: 'hesitant' },
-    { duration: 10000, drift: -40, pauseAt: 0.3, label: 'slow-wander' },
-  ];
-
   let walkFrame = null;
-  let snowFrames = [];
-  const footprintEls = [];
-  const snowEls = [];
+  let snowFrame = null;
+  const tempEls = [];
+
+  function $(id) { return document.getElementById(id); }
+  function ease(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   function createStars() {
-    const c = document.getElementById('stars');
+    const c = $('stars');
     for (let i = 0; i < 90; i++) {
       const s = document.createElement('div');
       s.className = 'star';
-      s.style.left = Math.random() * 100 + '%';
-      s.style.top = Math.random() * 60 + '%';
-      s.style.animationDelay = Math.random() * 3 + 's';
-      s.style.animationDuration = (2 + Math.random() * 3) + 's';
-      const sz = Math.random() > 0.85 ? 3 : Math.random() > 0.5 ? 2 : 1;
-      s.style.width = sz + 'px';
-      s.style.height = sz + 'px';
+      s.style.left = Math.random()*100+'%';
+      s.style.top = Math.random()*60+'%';
+      s.style.animationDelay = Math.random()*3+'s';
+      s.style.animationDuration = (2+Math.random()*3)+'s';
+      const sz = Math.random()>0.85 ? 3 : Math.random()>0.5 ? 2 : 1;
+      s.style.width = sz+'px'; s.style.height = sz+'px';
       c.appendChild(s);
     }
   }
 
-  function getCount() {
-    const v = localStorage.getItem(COUNT_KEY);
-    return v ? parseInt(v) : 2847193;
-  }
+  function getCount() { const v = localStorage.getItem(COUNT_KEY); return v ? parseInt(v) : 2847193; }
+  function incrementCount() { const c = getCount()+1; localStorage.setItem(COUNT_KEY, c); return c; }
+  function updateCounter() { $('counter').textContent = getCount().toLocaleString()+' penguins have walked away'; }
 
-  function incrementCount() {
-    const c = getCount() + 1;
-    localStorage.setItem(COUNT_KEY, c);
-    return c;
-  }
+  function addTemp(el) { document.body.appendChild(el); tempEls.push(el); }
+  function clearTemp() { tempEls.forEach(e => e.remove()); tempEls.length = 0; }
 
-  function updateCounter() {
-    document.getElementById('counter').textContent =
-      getCount().toLocaleString() + ' penguins have walked away';
-  }
-
-  function ease(t) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function dropFootprint(screenX, screenY, scale) {
-    const sz = Math.max(2, 6 * scale);
+  function dropFootprint(x, y, scale) {
+    const sz = Math.max(2, 6*scale);
     const fp = document.createElement('div');
     fp.className = 'footprint';
-    fp.style.left = (screenX - sz / 2) + 'px';
-    fp.style.top = (screenY) + 'px';
-    fp.style.width = sz + 'px';
-    fp.style.height = (sz * 0.5) + 'px';
-    fp.style.opacity = Math.min(0.12, 0.12 * scale);
-    document.body.appendChild(fp);
-    footprintEls.push(fp);
+    fp.style.left = (x - sz/2)+'px';
+    fp.style.top = y+'px';
+    fp.style.width = sz+'px';
+    fp.style.height = (sz*0.5)+'px';
+    fp.style.opacity = Math.min(0.15, 0.15*scale);
+    addTemp(fp);
   }
 
+  const snowState = [];
   function startSnow() {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 25; i++) {
       const p = document.createElement('div');
       p.className = 'snow-particle';
-      const sz = 1 + Math.random() * 3;
-      p.style.width = sz + 'px';
-      p.style.height = sz + 'px';
-      document.body.appendChild(p);
-
-      const state = {
+      const sz = 1+Math.random()*2.5;
+      p.style.width = sz+'px'; p.style.height = sz+'px';
+      addTemp(p);
+      snowState.push({
         el: p,
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        speedY: 0.2 + Math.random() * 0.5,
-        speedX: -0.3 - Math.random() * 0.5,
-        drift: Math.random() * Math.PI * 2,
-      };
-      snowEls.push(state);
+        x: Math.random()*innerWidth,
+        y: Math.random()*innerHeight,
+        vy: 0.3+Math.random()*0.6,
+        vx: -0.4-Math.random()*0.5,
+        d: Math.random()*Math.PI*2,
+      });
     }
-
-    function animSnow() {
-      for (const s of snowEls) {
-        s.y += s.speedY;
-        s.x += s.speedX + Math.sin(s.drift) * 0.3;
-        s.drift += 0.01;
-        if (s.y > window.innerHeight) { s.y = -5; s.x = Math.random() * window.innerWidth; }
-        if (s.x < -10) s.x = window.innerWidth + 5;
-        s.el.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px)';
+    (function loop() {
+      for (const s of snowState) {
+        s.y += s.vy; s.x += s.vx + Math.sin(s.d)*0.3; s.d += 0.01;
+        if (s.y > innerHeight) { s.y = -5; s.x = Math.random()*innerWidth; }
+        if (s.x < -10) s.x = innerWidth+5;
+        s.el.style.transform = 'translate('+s.x+'px,'+s.y+'px)';
       }
-      snowFrames.push(requestAnimationFrame(animSnow));
-    }
-    snowFrames.push(requestAnimationFrame(animSnow));
+      snowFrame = requestAnimationFrame(loop);
+    })();
   }
-
   function stopSnow() {
-    snowFrames.forEach(id => cancelAnimationFrame(id));
-    snowFrames = [];
-    snowEls.forEach(s => s.el.remove());
-    snowEls.length = 0;
+    if (snowFrame) cancelAnimationFrame(snowFrame);
+    snowFrame = null;
+    snowState.length = 0;
   }
 
-  function clearFootprints() {
-    footprintEls.forEach(f => f.remove());
-    footprintEls.length = 0;
-  }
+  // --- PENGUIN REFS ---
+  function getPenguin() { return $('penguin'); }
+  function getWG() { return $('waddleGroup'); }
+  function getSVG() { return $('penguinSvg'); }
 
-  function animateWalk(onDone) {
-    const style = WALK_STYLES[Math.floor(Math.random() * WALK_STYLES.length)];
-    const penguin = document.getElementById('penguin');
-    const svg = document.getElementById('penguinSvg');
-    const wg = document.getElementById('waddleGroup');
-
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-
-    const startX = 0;
-    const startY = 0;
-    const endY = -(H * 0.06);
-    const endX = style.drift;
-    const endScale = 0.12;
-
-    const PAUSE_DUR = 800;
-    const startTime = performance.now();
-    let pauseOffset = 0;
-    let isPaused = false;
-    let pauseStart = 0;
-    let lastFpT = 0;
-    let stepSide = 1;
-
-    svg.classList.add('silhouette');
-    startSnow();
+  // --- ANIMATION: RESOLUTE WALK ---
+  function animResolute(onDone) {
+    const p = getPenguin(), wg = getWG(), H = innerHeight;
+    const drift = pick([0, -50, 60]);
+    const dur = 3000;
+    const endY = -(H * 0.05);
+    const start = performance.now();
+    let lastFp = 0, side = 1;
 
     function tick(now) {
-      const wallElapsed = now - startTime - pauseOffset;
-      const rawT = Math.min(wallElapsed / style.duration, 1);
-
-      if (!isPaused && style.pauseAt > 0 && rawT >= style.pauseAt && pauseOffset === 0) {
-        isPaused = true;
-        pauseStart = now;
+      const raw = Math.min((now - start) / dur, 1);
+      const t = ease(raw);
+      const x = lerp(0, drift, t);
+      const y = lerp(0, endY, t);
+      const sc = lerp(1, 0.15, t);
+      const w = Math.sin((now-start)*0.016) * lerp(5, 1.5, raw);
+      p.style.transform = 'translateX(calc(-50% + '+x+'px)) translateY('+y+'px) scale('+sc+')';
+      p.style.opacity = raw > 0.75 ? lerp(1, 0.25, (raw-0.75)/0.25) : 1;
+      wg.setAttribute('transform', 'rotate('+w+' 30 70)');
+      if (raw - lastFp > 0.04 && raw < 0.85) {
+        side *= -1;
+        const r = p.getBoundingClientRect();
+        dropFootprint(r.left+r.width/2+side*3*sc, r.bottom-2*sc, sc);
+        lastFp = raw;
       }
-
-      if (isPaused) {
-        if (now - pauseStart >= PAUSE_DUR) {
-          pauseOffset = PAUSE_DUR;
-          isPaused = false;
-        } else {
-          wg.setAttribute('transform', 'rotate(0 30 70)');
-          walkFrame = requestAnimationFrame(tick);
-          return;
-        }
-      }
-
-      const t = ease(rawT);
-      const x = lerp(startX, endX, t);
-      const y = lerp(startY, endY, t);
-      const scale = lerp(1, endScale, t);
-
-      const waddleSpeed = lerp(0.014, 0.018, rawT);
-      const waddleAmp = lerp(6, 2, rawT);
-      const waddle = Math.sin(wallElapsed * waddleSpeed) * waddleAmp;
-
-      penguin.style.transform =
-        'translateX(calc(-50% + ' + x + 'px)) translateY(' + y + 'px) scale(' + scale + ')';
-
-      const fadeT = rawT > 0.8 ? (rawT - 0.8) / 0.2 : 0;
-      penguin.style.opacity = lerp(1, 0.3, fadeT);
-
-      wg.setAttribute('transform', 'rotate(' + waddle + ' 30 70)');
-
-      if (rawT - lastFpT > 0.03 && rawT < 0.9) {
-        stepSide *= -1;
-        const rect = penguin.getBoundingClientRect();
-        const fpX = rect.left + rect.width / 2 + stepSide * 3 * scale;
-        const fpY = rect.bottom - 2 * scale;
-        dropFootprint(fpX, fpY, scale);
-        lastFpT = rawT;
-      }
-
-      if (rawT < 1) {
-        walkFrame = requestAnimationFrame(tick);
-      } else {
-        onDone();
-      }
+      if (raw < 1) walkFrame = requestAnimationFrame(tick);
+      else onDone();
     }
-
     walkFrame = requestAnimationFrame(tick);
   }
 
-  function answer(choice) {
-    const questionScreen = document.getElementById('questionScreen');
-    const resultScreen = document.getElementById('resultScreen');
-    const resultText = document.getElementById('resultText');
-    const sunsetGlow = document.getElementById('sunsetGlow');
+  // --- ANIMATION: BELLY SLIDE ---
+  function animBellySlide(onDone) {
+    const p = getPenguin(), wg = getWG(), H = innerHeight;
+    const dur = 3000;
+    const tiltEnd = 0.25;
+    const drift = pick([-40, 0, 30]);
+    const endY = -(H * 0.05);
+    const start = performance.now();
 
-    resultText.innerHTML = choice === 'yes'
+    function tick(now) {
+      const raw = Math.min((now - start) / dur, 1);
+
+      let tilt, x, y, sc;
+      if (raw < tiltEnd) {
+        const lt = raw / tiltEnd;
+        tilt = lerp(0, 75, ease(lt));
+        x = 0; y = 0; sc = 1;
+      } else {
+        const st = (raw - tiltEnd) / (1 - tiltEnd);
+        const et = ease(st);
+        tilt = 75;
+        x = lerp(0, drift, et);
+        y = lerp(0, endY, et);
+        sc = lerp(1, 0.12, et);
+      }
+
+      const bounce = raw >= tiltEnd ? Math.sin((now-start)*0.025)*2*(1-ease((raw-tiltEnd)/(1-tiltEnd))) : 0;
+      p.style.transform = 'translateX(calc(-50% + '+x+'px)) translateY('+(y+bounce)+'px) scale('+sc+')';
+      p.style.opacity = raw > 0.8 ? lerp(1, 0.2, (raw-0.8)/0.2) : 1;
+      wg.setAttribute('transform', 'rotate('+tilt+' 30 70)');
+
+      if (raw < 1) walkFrame = requestAnimationFrame(tick);
+      else onDone();
+    }
+    walkFrame = requestAnimationFrame(tick);
+  }
+
+  // --- ANIMATION: DRAMATIC TURN ---
+  function animDramaticTurn(onDone) {
+    const p = getPenguin(), wg = getWG(), svg = getSVG(), H = innerHeight;
+    const dur = 3500;
+    const pauseEnd = 0.12;
+    const turnEnd = 0.22;
+    const endY = -(H * 0.05);
+    const drift = pick([-30, 0, 20]);
+    const start = performance.now();
+    let lastFp = 0, side = 1;
+
+    function tick(now) {
+      const raw = Math.min((now - start) / dur, 1);
+
+      if (raw < pauseEnd) {
+        p.style.transform = 'translateX(-50%) scale(1)';
+        wg.setAttribute('transform', '');
+      } else if (raw < turnEnd) {
+        const tt = (raw - pauseEnd) / (turnEnd - pauseEnd);
+        const scX = lerp(1, -1, ease(tt));
+        svg.style.transform = 'scaleX('+scX+')';
+        p.style.transform = 'translateX(-50%) scale(1)';
+      } else {
+        const wt = (raw - turnEnd) / (1 - turnEnd);
+        const et = ease(wt);
+        const x = lerp(0, drift, et);
+        const y = lerp(0, endY, et);
+        const sc = lerp(1, 0.15, et);
+        const w = Math.sin((now-start)*0.016) * lerp(5, 1.5, wt);
+        p.style.transform = 'translateX(calc(-50% + '+x+'px)) translateY('+y+'px) scale('+sc+')';
+        p.style.opacity = wt > 0.75 ? lerp(1, 0.25, (wt-0.75)/0.25) : 1;
+        wg.setAttribute('transform', 'rotate('+w+' 30 70)');
+        if (wt - lastFp > 0.05 && wt < 0.85) {
+          side *= -1;
+          const r = p.getBoundingClientRect();
+          dropFootprint(r.left+r.width/2+side*3*sc, r.bottom-2*sc, sc);
+          lastFp = wt;
+        }
+      }
+
+      if (raw < 1) walkFrame = requestAnimationFrame(tick);
+      else onDone();
+    }
+    walkFrame = requestAnimationFrame(tick);
+  }
+
+  // --- ANIMATION: SINK INTO VOID ---
+  function animSink(onDone) {
+    const p = getPenguin(), wg = getWG(), H = innerHeight;
+    const dur = 3500;
+    const walkPhase = 0.35;
+    const start = performance.now();
+    let lastFp = 0, side = 1;
+
+    function tick(now) {
+      const raw = Math.min((now - start) / dur, 1);
+
+      if (raw < walkPhase) {
+        const wt = raw / walkPhase;
+        const et = ease(wt);
+        const y = lerp(0, -(H*0.02), et);
+        const sc = lerp(1, 0.7, et);
+        const w = Math.sin((now-start)*0.016) * 5;
+        p.style.transform = 'translateX(-50%) translateY('+y+'px) scale('+sc+')';
+        wg.setAttribute('transform', 'rotate('+w+' 30 70)');
+        if (wt - lastFp > 0.08) {
+          side *= -1;
+          const r = p.getBoundingClientRect();
+          dropFootprint(r.left+r.width/2+side*3*sc, r.bottom-2, sc);
+          lastFp = wt;
+        }
+      } else {
+        const st = (raw - walkPhase) / (1 - walkPhase);
+        const et = ease(st);
+        const baseY = -(H*0.02);
+        const sc = 0.7;
+        const clip = lerp(0, 110, et);
+        p.style.transform = 'translateX(-50%) translateY('+baseY+'px) scale('+sc+')';
+        p.style.clipPath = 'inset(0 0 '+clip+'% 0)';
+        p.style.opacity = lerp(1, 0.5, et);
+        wg.setAttribute('transform', '');
+      }
+
+      if (raw < 1) walkFrame = requestAnimationFrame(tick);
+      else onDone();
+    }
+    walkFrame = requestAnimationFrame(tick);
+  }
+
+  // --- DISPATCH ---
+  const ANIMATIONS = [animDramaticTurn];
+
+  function runAnimation(onDone) {
+    getSVG().classList.add('silhouette');
+    startSnow();
+    pick(ANIMATIONS)(onDone);
+  }
+
+  function answer(choice) {
+    const qs = $('questionScreen');
+    const rs = $('resultScreen');
+    const rt = $('resultText');
+    const sg = $('sunsetGlow');
+
+    rt.innerHTML = choice === 'yes'
       ? 'You are the penguin.<br>Walk free.'
       : "You're lying.<br>You are still the penguin.";
 
     const shareText = choice === 'yes'
-      ? 'I am the penguin.\n' + SHARE_URL
-      : 'I tried to deny it. I am still the penguin.\n' + SHARE_URL;
+      ? 'I am the penguin.\n'+SHARE_URL
+      : 'I tried to deny it. I am still the penguin.\n'+SHARE_URL;
+    $('shareTwitter').href = 'https://x.com/intent/tweet?text='+encodeURIComponent(shareText);
 
-    document.getElementById('shareTwitter').href =
-      'https://x.com/intent/tweet?text=' + encodeURIComponent(shareText);
-
-    questionScreen.classList.add('hidden');
-
+    qs.classList.add('hidden');
     setTimeout(() => {
-      sunsetGlow.classList.add('visible');
-      animateWalk(() => {
-        resultScreen.classList.add('visible');
-      });
-    }, 600);
+      sg.classList.add('visible');
+      runAnimation(() => rs.classList.add('visible'));
+    }, 400);
 
     incrementCount();
     updateCounter();
@@ -643,7 +692,7 @@
 
   function copyLink() {
     navigator.clipboard.writeText(SHARE_URL).then(() => {
-      const btn = document.getElementById('shareCopy');
+      const btn = $('shareCopy');
       btn.textContent = 'Copied';
       setTimeout(() => btn.textContent = 'Copy link', 2000);
     });
@@ -653,24 +702,22 @@
     if (walkFrame) { cancelAnimationFrame(walkFrame); walkFrame = null; }
     stopSnow();
 
-    const questionScreen = document.getElementById('questionScreen');
-    const resultScreen = document.getElementById('resultScreen');
-    const penguin = document.getElementById('penguin');
-    const svg = document.getElementById('penguinSvg');
-    const sunsetGlow = document.getElementById('sunsetGlow');
-    const wg = document.getElementById('waddleGroup');
+    const p = getPenguin(), svg = getSVG(), wg = getWG();
+    const qs = $('questionScreen'), rs = $('resultScreen'), sg = $('sunsetGlow');
 
-    resultScreen.classList.remove('visible');
-    sunsetGlow.classList.remove('visible');
+    rs.classList.remove('visible');
+    sg.classList.remove('visible');
 
     setTimeout(() => {
-      clearFootprints();
-      penguin.style.transform = 'translateX(-50%)';
-      penguin.style.opacity = '1';
+      clearTemp();
+      p.style.transform = 'translateX(-50%)';
+      p.style.opacity = '1';
+      p.style.clipPath = '';
+      svg.style.transform = '';
       svg.classList.remove('silhouette');
       wg.setAttribute('transform', '');
-      questionScreen.classList.remove('hidden');
-    }, 600);
+      qs.classList.remove('hidden');
+    }, 500);
   }
 
   createStars();
